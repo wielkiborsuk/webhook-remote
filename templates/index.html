@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" data-ng-app="remote">
+  <head>
+    <meta charset="utf-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
+    <title>WebHook Remote</title>
+  </head>
+  <body ng-controller="MainCtrl">
+    <button ng-click="trigger('/cmus')">status</button>
+    <button ng-click="trigger('/cmus/play')">play/pause</button>
+    <button ng-click="trigger('/cmus/stop')">stop</button>
+    <button ng-click="trigger('/cmus/list')">available lists</button>
+    <button ng-repeat="l in lists" ng-click="trigger('/cmus/list/'+l)">{[l]}</button>
+    <!--<button ng-click="trigger('/cmus')"></button>-->
+
+    <script type="text/javascript">
+      var app = angular.module('remote', []);
+
+      app.controller('MainCtrl', function ($scope, $http) {
+        $scope.lists = [];
+        $http.get('/cmus/list').success(function (data) {
+          $scope.lists = data;
+        });
+
+        $scope.trigger = function (path) {
+          $http.get(path).success(function (data) {
+            alert(data);
+          });
+        }
+      });
+
+      app.config(['$interpolateProvider', function($interpolateProvider) {
+        $interpolateProvider.startSymbol('{[');
+        $interpolateProvider.endSymbol(']}');
+      }]);
+    </script>
+  </body>
+</html>
