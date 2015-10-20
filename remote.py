@@ -10,7 +10,7 @@ cmus_path = os.path.expanduser('~/.cmus')
 
 @app.route("/")
 def hello():
-    return render_template('index.html', lists=cmus_lists())
+    return render_template('index.html')
     # return "Welcome to remote, here are available hooks"
 
 

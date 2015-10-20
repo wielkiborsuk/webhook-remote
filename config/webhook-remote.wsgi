@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 import sys
+import os
 
-application_root = '/path/to/applcation/root'
+application_root = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 sys.path.insert(0, application_root)
 
 activate_this = application_root + '/local/bin/activate_this.py'
