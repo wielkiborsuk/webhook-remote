@@ -1,17 +1,21 @@
 import subprocess
 import os
+import pwd
 import json
 from flask import Flask
 from flask import render_template
 app = Flask(__name__)
 
-cmus_path = os.path.expanduser('~/.cmus')
+cmus_path = os.path.expanduser('~/.config/cmus')
+if 'USER' not in os.environ or not os.environ['USER']:
+    os.environ['USER'] = pwd.getpwuid(os.getuid()).pw_name
 
+if 'XDG_RUNTIME_DIR' not in os.environ or not os.environ['XDG_RUNTIME_DIR']:
+    os.environ['XDG_RUNTIME_DIR'] = '/run/user/' + str(os.getuid())
 
 @app.route("/")
 def hello():
     return render_template('index.html')
-    # return "Welcome to remote, here are available hooks"
 
 
 @app.route("/cmus")
