@@ -6,7 +6,10 @@ from flask import Flask
 from flask import render_template
 app = Flask(__name__)
 
-cmus_path = os.path.expanduser('~/.config/cmus')
+cmus_path = next((x for x in ['~/.config/cmus', '~/.cmus'] if os.path.exists(os.path.expanduser(x))), '~')
+cmus_path = os.path.expanduser(cmus_path)
+
+
 if 'USER' not in os.environ or not os.environ['USER']:
     os.environ['USER'] = pwd.getpwuid(os.getuid()).pw_name
 
@@ -30,6 +33,11 @@ def cmus_play():
     subprocess.call(['cmus-remote', '-u'])
     return 'OK'
 
+
+@app.route('/cmus/next')
+def cmus_next():
+    subprocess.call(['cmus-remote', '-n'])
+    return 'OK'
 
 @app.route('/cmus/stop')
 def cmus_stop():

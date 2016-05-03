@@ -9,22 +9,31 @@
     <button ng-click="trigger('cmus')">status</button>
     <button ng-click="trigger('cmus/play')">play/pause</button>
     <button ng-click="trigger('cmus/stop')">stop</button>
+    <button ng-click="trigger('cmus/next')">next</button>
     <button ng-click="trigger('cmus/list')">available lists</button>
     <button ng-repeat="l in lists" ng-click="trigger('cmus/list/'+l)">{[l]}</button>
     <!--<button ng-click="trigger('/cmus')"></button>-->
 
+    <pre ng-show="!!result" ng-bind="result"></pre>
+
     <script type="text/javascript">
       var app = angular.module('remote', []);
 
-      app.controller('MainCtrl', function ($scope, $http) {
+      app.controller('MainCtrl', function ($scope, $http, $timeout) {
         $scope.lists = [];
+        $scope.result = '';
+
         $http.get('cmus/list').success(function (data) {
           $scope.lists = data;
         });
 
         $scope.trigger = function (path) {
           $http.get(path).success(function (data) {
-            alert(data);
+            $scope.result = data;
+
+            $timeout(function () {
+              $scope.result = '';
+              }, 1000);
           });
         }
       });
