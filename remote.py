@@ -5,7 +5,9 @@ import json
 import shutil
 from flask import Flask
 from flask import render_template
+from flask import request
 from collections import defaultdict
+from urllib.request import urlretrieve
 app = Flask(__name__)
 
 
@@ -13,7 +15,6 @@ class CmusHandler:
     cmus_path = next((x for x in ['~/.config/cmus', '~/.cmus']
                       if os.path.exists(os.path.expanduser(x))), '~')
     cmus_path = os.path.expanduser(cmus_path)
-
 
     if 'USER' not in os.environ or not os.environ['USER']:
         os.environ['USER'] = pwd.getpwuid(os.getuid()).pw_name
@@ -48,7 +49,8 @@ class CmusHandler:
 
     @app.route('/cmus/list')
     def cmus_lists():
-        lst = subprocess.check_output(['ls', CmusHandler.cmus_path]).decode().split()
+        lst = (subprocess.check_output(['ls', CmusHandler.cmus_path])
+               .decode().split())
         lst = [x for x in lst if x.endswith('.pls')]
 
         return json.dumps(lst, ensure_ascii=False)
@@ -85,15 +87,28 @@ class WolHandler:
         return 'OK'
 
 
+class BookmarkHandler:
+    last_file = None
+
+    @app.route('/book_sync/<idx>')
+    def book_sync(idx):
+        path = 'https://drive.google.com/uc?id={}'.format(idx)
+        file_name, headers = urlretrieve(path)
+        return file_name
+
+    @app.route('/book_sync', methods=['POST'])
+    def post_sync():
+        file_uri = request.data.decode()
+        file_name, headers = urlretrieve(file_uri)
+        BookmarkHandler.last_file = file_name
+        print(file_name)
+
+        return file_name
+
+
 @app.route("/")
 def hello():
     return render_template('index.html')
-
-
-# @app.route('/cmus/mute')
-# def cmus_mute():
-    # subprocess.call(['cmus-remote', ''])
-    # return 'OK'
 
 
 if __name__ == "__main__":
