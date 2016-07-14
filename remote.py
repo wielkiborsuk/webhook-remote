@@ -3,6 +3,7 @@ import os
 import pwd
 import json
 import shutil
+import javaobj
 from flask import Flask
 from flask import render_template
 from flask import request
@@ -104,6 +105,15 @@ class BookmarkHandler:
         print(file_name)
 
         return file_name
+
+    @app.route('/book_sync/last')
+    def last_bookmark():
+        if BookmarkHandler.last_file:
+            bookmark = open(BookmarkHandler.last_file, 'rb').read()
+            parsed = javaobj.loads(bookmark)
+
+            return "{}\n{}".format(parsed.mFileName, parsed.mFilePosition)
+        return "fuck"
 
 
 @app.route("/")
