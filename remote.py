@@ -4,6 +4,7 @@ import pwd
 import json
 import shutil
 import javaobj
+import datetime
 from flask import Flask
 from flask import render_template
 from flask import request
@@ -95,6 +96,8 @@ class BookmarkHandler:
     def book_sync(idx):
         path = 'https://drive.google.com/uc?id={}'.format(idx)
         file_name, headers = urlretrieve(path)
+        BookmarkHandler.last_file = file_name
+
         return file_name
 
     @app.route('/book_sync', methods=['POST'])
@@ -102,7 +105,6 @@ class BookmarkHandler:
         file_uri = request.data.decode()
         file_name, headers = urlretrieve(file_uri)
         BookmarkHandler.last_file = file_name
-        print(file_name)
 
         return file_name
 
@@ -112,7 +114,9 @@ class BookmarkHandler:
             bookmark = open(BookmarkHandler.last_file, 'rb').read()
             parsed = javaobj.loads(bookmark)
 
-            return "{}\n{}".format(parsed.mFileName, parsed.mFilePosition)
+            return "{}\n{}".format(parsed.mFileName,
+                                   datetime.timedelta(
+                                       seconds=parsed.mFilePosition))
         return "fuck"
 
 
