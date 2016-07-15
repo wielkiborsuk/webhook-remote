@@ -1,35 +1,57 @@
 <!DOCTYPE html>
-<html lang="en" data-ng-app="remote">
+<html lang="en" data-ng-app="remote" style="height: 100%;">
   <head>
     <meta charset="utf-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"   integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="   crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
     <title>WebHook Remote</title>
+    <style type="text/css" media="screen">
+    ul>
+    </style>
   </head>
-  <body data-ng-controller="MainCtrl">
-    <button data-ng-repeat="l in lists" data-ng-click="trigger('cmus/list/'+l)">{[l]}</button>
-    <br/>
-    <button data-ng-click="trigger('cmus/play')">play/pause</button>
-    <button data-ng-click="trigger('cmus/stop')">stop</button>
-    <button data-ng-click="trigger('cmus/next')">next</button>
-    <!--<button data-ng-click="trigger('cmus')">status</button>-->
-    <!--<button data-ng-click="trigger('cmus/list')">available lists</button>-->
+  <body data-ng-controller="MainCtrl" style="height: 100%;">
+    <div class="container-fluid" style="display: flex; flex-direction: column; height: 100%;">
+      <div class="row">
+        <div class="col-xs-6">
+          <button type="button" class="btn btn-sm btn-default" data-ng-repeat="l in lists" data-ng-click="trigger('cmus/list/'+l)">{[l]}</button>
+        </div>
+        <div class="col-xs-5">
+          <div>
+            <p>
+              <span data-ng-bind="status.filename"></span>
+              <span data-ng-bind="status.position | date : 'HH:mm:ss' : 'UTC'"></span>/
+              <span data-ng-bind="status.duration | date : 'HH:mm:ss' : 'UTC'"></span>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-xs-6">
+          <button class="btn btn-sm btn-default" data-ng-click="trigger('cmus/play')">play/pause</button>
+          <button class="btn btn-sm btn-default" data-ng-click="trigger('cmus/stop')">stop</button>
+          <button class="btn btn-sm btn-default" data-ng-click="trigger('cmus/next')">next</button>
+          <!--<button class="btn btn-sm btn-default" data-ng-click="trigger('cmus')">status</button>-->
+          <!--<button class="btn btn-sm btn-default" data-ng-click="trigger('cmus/list')">available lists</button>-->
+        </div>
+      </div>
 
-    <div>
-      <p>Currently playing:</p>
-      <p>
-        <span data-ng-bind="status.filename"></span>
-        <span data-ng-bind="status.position | date : 'HH:mm:ss' : 'UTC'"></span>/
-        <span data-ng-bind="status.duration | date : 'HH:mm:ss' : 'UTC'"></span>
-      </p>
+      <div class="row" style="flex: 1 1 0%; display: flex;">
+        <div class="col-xs-6" style="overflow-y: scroll; flex 1 1 auto;">
+          <div class="list-group">
+            <a class="list-group-item" ng-class="{'active': status.filename==t}" data-ng-repeat="t in playlist" data-ng-click="select(t)" data-ng-bind="t">
+            </a>
+          </div>
+        </div>
+        <div class="col-xs-6" style="flex 1 1 auto;">
+          <pre data-ng-show="!!result" data-ng-bind="result"></pre>
+        </div>
+      </div>
+
+
     </div>
-
-    <div>
-      <p style="margin: 0px;" data-ng-repeat="t in playlist">
-        <span data-ng-style="style(status.filename, t)" data-ng-bind="t"></span>
-      </p>
-    </div>
-
-    <pre data-ng-show="!!result" data-ng-bind="result"></pre>
 
     <script type="text/javascript">
       var app = angular.module('remote', []);
@@ -58,6 +80,10 @@
         $scope.getStatus();
         $interval($scope.getStatus, 2000);
 
+        $scope.select = function (file) {
+          $http.post('cmus/select', file);
+        };
+
         $scope.trigger = function (path) {
           $http.get(path).success(function (data) {
             $scope.result = data;
@@ -67,15 +93,6 @@
               }, 1000);
           });
         }
-
-        $scope.style = function (a, b) {
-          if (a == b) {
-            return {"color": "red"};
-          }
-          else {
-            return {"color": "green"};
-          }
-        };
       });
 
       app.config(['$interpolateProvider', function($interpolateProvider) {

@@ -94,6 +94,13 @@ class CmusHandler:
 
         return 'No such list'
 
+    @app.route('/cmus/select', methods=['POST'])
+    def cmus_song_select():
+        file_name = request.data.decode()
+        subprocess.call(['cmus-remote', '-C', '/{}'.format(file_name),
+                         'win-activate']);
+        return 'OK'
+
 
 class WolHandler:
     macs = defaultdict(str)
