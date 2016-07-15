@@ -5,6 +5,7 @@ import json
 import shutil
 import javaobj
 import datetime
+import re
 from flask import Flask
 from flask import render_template
 from flask import request
@@ -26,13 +27,29 @@ class CmusHandler:
 
     @app.route("/cmus")
     def cmus_status():
-        # TODO - process the status to take out trash
         status = subprocess.check_output(['cmus-remote', '-Q']).decode()
+        file_name = re.search('^file [^\n]*/([^\n/]+)$', status,
+                              re.MULTILINE).group(1)
+        position = re.search('^position (\d+)$', status,
+                             re.MULTILINE).group(1)
+        duration = re.search('^duration (\d+)$', status,
+                             re.MULTILINE).group(1)
+        result = {
+            'filename': file_name,
+            'position': int(position)*1000,
+            'duration': int(duration)*1000
+        }
+
+        return json.dumps(result)
+
+    @app.route("/cmus/playlist")
+    def cmus_playlist():
         playlist = (subprocess
                     .check_output(['cmus-remote', '-C', 'save -p -'])
                     .decode())
         playlist = [l.split('/')[-1] for l in playlist.split('\n')]
-        return status+str(playlist)
+        return json.dumps(playlist)
+
 
     @app.route('/cmus/play')
     def cmus_play():

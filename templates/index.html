@@ -5,27 +5,58 @@
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
     <title>WebHook Remote</title>
   </head>
-  <body ng-controller="MainCtrl">
-    <button ng-click="trigger('cmus')">status</button>
-    <button ng-click="trigger('cmus/play')">play/pause</button>
-    <button ng-click="trigger('cmus/stop')">stop</button>
-    <button ng-click="trigger('cmus/next')">next</button>
-    <button ng-click="trigger('cmus/list')">available lists</button>
-    <button ng-repeat="l in lists" ng-click="trigger('cmus/list/'+l)">{[l]}</button>
-    <!--<button ng-click="trigger('/cmus')"></button>-->
+  <body data-ng-controller="MainCtrl">
+    <button data-ng-repeat="l in lists" data-ng-click="trigger('cmus/list/'+l)">{[l]}</button>
+    <br/>
+    <button data-ng-click="trigger('cmus/play')">play/pause</button>
+    <button data-ng-click="trigger('cmus/stop')">stop</button>
+    <button data-ng-click="trigger('cmus/next')">next</button>
+    <!--<button data-ng-click="trigger('cmus')">status</button>-->
+    <!--<button data-ng-click="trigger('cmus/list')">available lists</button>-->
 
-    <pre ng-show="!!result" ng-bind="result"></pre>
+    <div>
+      <p>Currently playing:</p>
+      <p>
+        <span data-ng-bind="status.filename"></span>
+        <span data-ng-bind="status.position | date : 'HH:mm:ss' : 'UTC'"></span>/
+        <span data-ng-bind="status.duration | date : 'HH:mm:ss' : 'UTC'"></span>
+      </p>
+    </div>
+
+    <div>
+      <p style="margin: 0px;" data-ng-repeat="t in playlist">
+        <span data-ng-style="style(status.filename, t)" data-ng-bind="t"></span>
+      </p>
+    </div>
+
+    <pre data-ng-show="!!result" data-ng-bind="result"></pre>
 
     <script type="text/javascript">
       var app = angular.module('remote', []);
 
-      app.controller('MainCtrl', function ($scope, $http, $timeout) {
+      app.controller('MainCtrl', function ($scope, $http, $timeout, $interval) {
         $scope.lists = [];
         $scope.result = '';
 
         $http.get('cmus/list').success(function (data) {
           $scope.lists = data;
         });
+
+        $scope.getPlaylist = function () {
+          $http.get('cmus/playlist').success(function (data) {
+            $scope.playlist = data;
+          });
+        };
+        $scope.getPlaylist();
+        $interval($scope.getPlaylist, 10000);
+
+        $scope.getStatus = function () {
+          $http.get('cmus').success(function (data) {
+            $scope.status = data;
+          });
+        };
+        $scope.getStatus();
+        $interval($scope.getStatus, 2000);
 
         $scope.trigger = function (path) {
           $http.get(path).success(function (data) {
@@ -36,6 +67,15 @@
               }, 1000);
           });
         }
+
+        $scope.style = function (a, b) {
+          if (a == b) {
+            return {"color": "red"};
+          }
+          else {
+            return {"color": "green"};
+          }
+        };
       });
 
       app.config(['$interpolateProvider', function($interpolateProvider) {
