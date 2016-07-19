@@ -47,9 +47,8 @@ class CmusHandler:
         playlist = (subprocess
                     .check_output(['cmus-remote', '-C', 'save -p -'])
                     .decode())
-        playlist = [l.split('/')[-1] for l in playlist.split('\n')]
+        playlist = [l.split('/')[-1] for l in playlist.split('\n') if l]
         return json.dumps(playlist)
-
 
     @app.route('/cmus/play')
     def cmus_play():
@@ -98,7 +97,7 @@ class CmusHandler:
     def cmus_song_select():
         file_name = request.data.decode()
         subprocess.call(['cmus-remote', '-C', '/{}'.format(file_name),
-                         'win-activate']);
+                         'win-activate'])
         return 'OK'
 
 

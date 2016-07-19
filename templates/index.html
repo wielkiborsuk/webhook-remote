@@ -9,44 +9,63 @@
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.5/angular.min.js"></script>
     <title>WebHook Remote</title>
     <style type="text/css" media="screen">
-    ul>
+.list-group {
+  padding-left: 0px;
+  padding-right: 0px;
+  margin-left: 15px;
+  margin-right: 15px;
+  overflow-y: auto;
+}
+
+.parent-flex {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.nested-flex {
+  flex: 1 1 auto;
+  display: flex;
+}
+
+.header-row {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
     </style>
   </head>
   <body data-ng-controller="MainCtrl" style="height: 100%;">
-    <div class="container-fluid" style="display: flex; flex-direction: column; height: 100%;">
+    <div class="container-fluid parent-flex">
       <div class="row">
-        <div class="col-xs-6">
-          <button type="button" class="btn btn-sm btn-default" data-ng-repeat="l in lists" data-ng-click="trigger('cmus/list/'+l)">{[l]}</button>
-        </div>
-        <div class="col-xs-5">
-          <div>
-            <p>
-              <span data-ng-bind="status.filename"></span>
-              <span data-ng-bind="status.position | date : 'HH:mm:ss' : 'UTC'"></span>/
-              <span data-ng-bind="status.duration | date : 'HH:mm:ss' : 'UTC'"></span>
-            </p>
-          </div>
+        <div class="col-xs-6 nested-flex">
+          <pre data-ng-show="!!result" data-ng-bind="result"></pre>
         </div>
       </div>
-      <div class="row">
+      <div class="row header-row">
         <div class="col-xs-6">
-          <button class="btn btn-sm btn-default" data-ng-click="trigger('cmus/play')">play/pause</button>
-          <button class="btn btn-sm btn-default" data-ng-click="trigger('cmus/stop')">stop</button>
-          <button class="btn btn-sm btn-default" data-ng-click="trigger('cmus/next')">next</button>
-          <!--<button class="btn btn-sm btn-default" data-ng-click="trigger('cmus')">status</button>-->
-          <!--<button class="btn btn-sm btn-default" data-ng-click="trigger('cmus/list')">available lists</button>-->
+          <div class="btn-group" role="group">
+            <button class="btn btn-sm btn-default" data-ng-click="trigger('cmus/play')">play/pause</button>
+            <button class="btn btn-sm btn-default" data-ng-click="trigger('cmus/stop')">stop</button>
+            <button class="btn btn-sm btn-default" data-ng-click="trigger('cmus/next')">next</button>
+            <!--<button class="btn btn-sm btn-default" data-ng-click="trigger('cmus')">status</button>-->
+            <!--<button class="btn btn-sm btn-default" data-ng-click="trigger('cmus/list')">available lists</button>-->
+          </div>
+        </div>
+        <div class="col-xs-6">
+          <div class="btn-group pull-right" role="group">
+              <span class="btn btn-sm btn-default disabled" data-ng-bind="status.filename"></span>
+              <span class="btn btn-sm btn-default disabled" data-ng-bind="getTime()"></span>
+              <!--<span class="btn btn-sm btn-default disabled" data-ng-bind="status.duration | date : 'HH:mm:ss' : 'UTC'"></span>-->
+          </div>
         </div>
       </div>
 
-      <div class="row" style="flex: 1 1 0%; display: flex;">
-        <div class="col-xs-6" style="overflow-y: scroll; flex 1 1 auto;">
-          <div class="list-group">
-            <a class="list-group-item" ng-class="{'active': status.filename==t}" data-ng-repeat="t in playlist" data-ng-click="select(t)" data-ng-bind="t">
-            </a>
-          </div>
+      <div class="row nested-flex">
+        <div class="col-xs-6 list-group">
+          <a class="list-group-item" data-ng-repeat="l in lists" data-ng-click="trigger('cmus/list/'+l)">{[l]}</a>
         </div>
-        <div class="col-xs-6" style="flex 1 1 auto;">
-          <pre data-ng-show="!!result" data-ng-bind="result"></pre>
+        <div class="col-xs-6 list-group">
+            <a class="list-group-item" ng-class="{'active': status.filename==t}" data-ng-repeat="t in playlist" data-ng-click="select(t)" data-ng-bind="t"></a>
         </div>
       </div>
 
@@ -56,7 +75,7 @@
     <script type="text/javascript">
       var app = angular.module('remote', []);
 
-      app.controller('MainCtrl', function ($scope, $http, $timeout, $interval) {
+      app.controller('MainCtrl', function ($scope, $http, $timeout, $interval, $filter) {
         $scope.lists = [];
         $scope.result = '';
 
@@ -83,6 +102,12 @@
         $scope.select = function (file) {
           $http.post('cmus/select', file);
         };
+
+        $scope.getTime = function () {
+          return ($filter('date')($scope.status.position, "HH:mm:ss", "UTC")
+              + " / "
+              + $filter('date')($scope.status.duration, "HH:mm:ss", "UTC"));
+        }
 
         $scope.trigger = function (path) {
           $http.get(path).success(function (data) {
