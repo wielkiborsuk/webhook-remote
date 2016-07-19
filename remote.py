@@ -101,6 +101,13 @@ class CmusHandler:
         return 'OK'
 
 
+class AdminHandler:
+
+    @app.route('/admin')
+    def admin_dashboard():
+        return render_template('admin.html')
+
+
 class WolHandler:
     macs = defaultdict(str)
     macs['nora'] = '90:2b:34:37:8a:54'
