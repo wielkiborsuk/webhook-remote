@@ -13,6 +13,23 @@ from collections import defaultdict
 from urllib.request import urlretrieve
 app = Flask(__name__)
 
+try:
+    import localizator
+
+    class LocationHandler:
+        wrapper = localizator.LocatorWrapper(['borsuk', 'aga'])
+
+        @app.route('/locations')
+        def check_locations():
+            return json.dumps(LocationHandler.wrapper.check_locations())
+
+        @app.route('/where_is_borsuk')
+        def location_map():
+            return render_template('map.html')
+
+except Exception as e:
+    print(e)
+
 
 class CmusHandler:
     cmus_path = next((x for x in ['~/.config/cmus', '~/.cmus']
