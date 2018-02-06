@@ -1,0 +1,7 @@
+[Unit]
+Description=Http remote webhook server
+
+[Service]
+ExecStart=/home/borsuk/workspace/webhook-remote/.venv/bin/python /home/borsuk/workspace/webhook-remote/remote.py
+Restart=always
+User=borsuk
