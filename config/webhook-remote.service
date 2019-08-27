@@ -5,3 +5,6 @@ Description=Http remote webhook server
 ExecStart=/home/borsuk/workspace/webhook-remote/.venv/bin/python /home/borsuk/workspace/webhook-remote/remote.py
 Restart=always
 User=borsuk
+
+[Install]
+WantedBy=multi-user.target
