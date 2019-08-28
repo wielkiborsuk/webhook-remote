@@ -39,7 +39,8 @@ class CmusHandler:
     if 'USER' not in os.environ or not os.environ['USER']:
         os.environ['USER'] = pwd.getpwuid(os.getuid()).pw_name
 
-    if 'XDG_RUNTIME_DIR' not in os.environ or not os.environ['XDG_RUNTIME_DIR']:
+    if ('XDG_RUNTIME_DIR' not in os.environ
+            or not os.environ['XDG_RUNTIME_DIR']):
         os.environ['XDG_RUNTIME_DIR'] = '/run/user/' + str(os.getuid())
 
     @app.route("/cmus")
@@ -47,9 +48,9 @@ class CmusHandler:
         status = subprocess.check_output(['cmus-remote', '-Q']).decode()
         file_name = re.search('^file [^\n]*/([^\n/]+)$', status,
                               re.MULTILINE).group(1)
-        position = re.search('^position (\d+)$', status,
+        position = re.search('^position (\\d+)$', status,
                              re.MULTILINE).group(1)
-        duration = re.search('^duration (\d+)$', status,
+        duration = re.search('^duration (\\d+)$', status,
                              re.MULTILINE).group(1)
         result = {
             'filename': file_name,
@@ -164,7 +165,7 @@ class BookmarkHandler:
             return "{}\n{}".format(parsed.mFileName,
                                    datetime.timedelta(
                                        seconds=parsed.mFilePosition))
-        return "fuck"
+        return "no bookmark"
 
 
 @app.route("/")
@@ -173,5 +174,6 @@ def hello():
 
 
 if __name__ == "__main__":
-    app.debug = True
-    app.run('0.0.0.0')
+    # app.debug = True
+    # app.run('0.0.0.0')
+    app.run()
